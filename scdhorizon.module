@@ -1,0 +1,98 @@
+<?php
+
+function scdhorizon_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#scdhorizon":
+      return '<p>' . t("Help text") . '</p>';
+      break;
+  }
+} 
+
+function scdhorizon_menu() {
+  $items['user/%user/currentdocs'] = array(
+        'title' => t('Documents en cours'),
+        'page callback' => 'scdhorizon_currentdocs',
+        'page arguments' => array(1),
+        'access callback' => TRUE,
+        'type' => MENU_LOCAL_TASK,
+  );  
+
+  return $items;
+}
+
+function scdhorizon_cas_user_presave(&$edit, $account) {
+  $ldap_uid = $edit['field_ldap_uid']['und']['0']['value'];
+
+  global $databases;
+  $H = $databases['horizon']['default'];
+  $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
+
+  $sth = $dbh->prepare("SELECT * FROM borrower WHERE ville1='$ldap_uid'");
+  $sth->execute();
+  $huser = $sth->fetch();
+
+  $edit['field_horizon_uid']['und'][0]['value'] = $huser['borrower#'];;
+
+  $ldapattrs = cas_ldap_attributes($account->cas_name);
+
+  $pole2 = 11;  
+  if ($ldapattrs['pole2'][0] == "Guadeloupe")
+    $pole2 = 10;
+  $edit['field_ldap_pole2']['und'][0]['tid'] = $pole2;
+
+  $vocabulary = taxonomy_vocabulary_machine_name_load('Affiliation');
+  $terms = entity_load('taxonomy_term', FALSE, array('vid' => $vocabulary->vid));
+
+  $affiliation;
+  foreach(explode(',', $ldapattrs['edupersonaffiliation'][0]) as $aff)
+  {
+    foreach($terms as $term)
+    {
+      if ($aff == $term->name)
+        $edit['field_ldap_affiliation']['und'][0]['tid'] = $term->tid;
+    }
+  }
+
+  $dbh = null;
+}
+
+function scdhorizon_currentdocs($user) {
+  if (! array_key_exists('und', $user->field_horizon_uid))
+  {
+    return "<p>Votre compte n'a pas pu être relié au SIGB.</p>";
+  }
+
+  $bn = $user->field_horizon_uid['und'][0]['value'];
+
+  global $databases;
+  $H = $databases['horizon']['default'];
+  $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
+
+  $sth = $dbh->prepare("SELECT convert(varchar(10),dateadd(dd,last_cko_date, convert(date, '01/01/1970')),3),location,title,convert(varchar(10),dateadd(dd,due_date, convert(date, '01/01/1970')),3) FROM item_with_borrower WHERE borrower#=$bn");
+
+  $sth->execute();
+
+  $docs = $sth->fetchAll();
+
+  $dbh = null;
+
+  if (! count($docs)) {
+    return "<p>Aucun document en cours.</p>";
+  }
+
+  $out = "<table class=\"table table-striped\">";
+  $out .= "<tr><th>Titre</th><th>Bibliothèque</th><th>Prêt le</th><th>Retour le</th></tr>";
+  foreach ($docs as $doc) {
+    $out .= "<tr>
+               <td>".iconv('CP437', 'UTF-8', $doc['title'])."</td>
+               <td>".$doc['location']."</td>
+               <td>".$doc['computed']."</td>
+               <td>".$doc['computed1']."</td>
+             </tr>";
+  }
+  $out .= "</table>";
+
+  return $out;
+}
+
+?>

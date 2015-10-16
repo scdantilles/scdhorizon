@@ -1,0 +1,4 @@
+name = SCD Horizon
+description = "Horizon integration for the SCD"
+package = SCD
+core = 7.x
