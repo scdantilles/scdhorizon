@@ -21,6 +21,9 @@ function scdhorizon_menu() {
 }
 
 function scdhorizon_cas_user_presave(&$edit, $account) {
+
+  // borrower#
+
   $ldap_uid = $edit['field_ldap_uid']['und']['0']['value'];
 
   global $databases;
@@ -33,12 +36,16 @@ function scdhorizon_cas_user_presave(&$edit, $account) {
 
   $edit['field_horizon_uid']['und'][0]['value'] = $huser['borrower#'];;
 
+  // pole2
+
   $ldapattrs = cas_ldap_attributes($account->cas_name);
 
   $pole2 = 11;  
   if ($ldapattrs['pole2'][0] == "Guadeloupe")
     $pole2 = 10;
   $edit['field_ldap_pole2']['und'][0]['tid'] = $pole2;
+
+  // affiliation
 
   $vocabulary = taxonomy_vocabulary_machine_name_load('Affiliation');
   $terms = entity_load('taxonomy_term', FALSE, array('vid' => $vocabulary->vid));
@@ -51,6 +58,22 @@ function scdhorizon_cas_user_presave(&$edit, $account) {
       if ($aff == $term->name)
         $edit['field_ldap_affiliation']['und'][0]['tid'] = $term->tid;
     }
+  }
+
+  // horizon_division
+
+  $query = new EntityFieldQuery();
+
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'library')
+    ->fieldCondition('field_id_bibliotheque', 'value', $huser['location'])
+    ->propertyCondition('status', NODE_PUBLISHED);
+
+  $result = $query->execute();
+
+  foreach($result['node'] as $k => $v)
+  {
+    $edit['field_horizon_division']['und'][0]['nid'] = $k;
   }
 
   $dbh = null;
