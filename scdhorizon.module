@@ -17,7 +17,85 @@ function scdhorizon_menu() {
         'type' => MENU_LOCAL_TASK,
   );  
 
+  $items['quitus'] = array(
+        'title' => t('Demander un quitus'),
+        'page callback' => 'scdhorizon_quitus',
+        'access callback' => TRUE,
+        'type' => MENU_LOCAL_TASK,
+  );  
+
   return $items;
+}
+
+function scdhorizon_quitus() {
+  
+  $candeliver = true;
+  global $user;
+  $userfields = user_load($user->uid);
+
+  $out = "<h2>Vérifications:</h2>";
+
+  if (array_key_exists('und', $userfields->field_horizon_uid))
+  {
+    $bn = $userfields->field_horizon_uid['und'][0]['value'];
+    $out .= "<p class=\"text-success\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Identitiant trouvé dans le SIGB.</p>";
+  }
+  else
+  {
+    $out .= "<p class=\"text-danger\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>Votre compte n'a pas pu être relié au SIGB.</p>";
+    $candeliver = false;
+  }
+
+  if (isset($bn)) {
+  
+    global $databases;
+    $H = $databases['horizon']['default'];
+    $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
+  
+    $sth = $dbh->prepare("SELECT convert(varchar(10),dateadd(dd,last_cko_date, convert(date, '01/01/1970')),3),location,title,convert(varchar(10),dateadd(dd,due_date, convert(date, '01/01/1970')),3) FROM item_with_borrower WHERE borrower#=$bn");
+  
+    $sth->execute();
+  
+    $docs = $sth->fetchAll();
+  
+    if (! count($docs))
+    {
+      $out .= "<p class=\"text-success\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Aucun document en cours.</p>";
+    }
+    else
+    {
+      $out .= "<p class=\"text-danger\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span> Vous avez encore des documents en cours.</p>";
+      $candeliver = false;
+    }
+  
+    $sth = $dbh->prepare("select * from burb where borrower#=$bn and block in ('l','Note', 'suspend', 'od', 'notice1', 'notice2', 'notice3', 'notice4', 'rn', 'final', 'frais', 'quitus', 'refund', 'fee')");
+  
+    $sth->execute();
+  
+    $blockages = $sth->fetchAll();
+  
+    if (! count($blockages))
+    {
+      $out .= "<p class=\"text-success\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Aucun blocages.</p>";
+    }
+    else
+    {
+      $out .= "<p class=\"text-danger\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span> Votre compte fait l'objet d'un ou plusieurs blocages.</p>";
+      $candeliver = false;
+    }
+  
+    $dbh = null;
+  }
+
+  if ($candeliver) {
+    $out .= "<button type=\"button\" class=\"btn btn-danger\">Cloturer votre compte et obtenir le quitus</button>";
+  }
+  else
+  {
+    $out .= "<p>Nous ne pouvons pas cloturer votre compte en l'état. Merci de prendre contact avec votre bibliothèque.</p>";
+  }
+
+  return $out;
 }
 
 function scdhorizon_cas_user_presave(&$edit, $account) {
