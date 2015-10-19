@@ -1,4 +1,5 @@
 name = SCD Horizon
 description = "Horizon integration for the SCD"
+dependencies[] = simple_mail
 package = SCD
 core = 7.x

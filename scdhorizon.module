@@ -92,10 +92,35 @@ function scdhorizon_quitus() {
   }
   else
   {
-    $out .= "<p>Nous ne pouvons pas cloturer votre compte en l'état. Merci de prendre contact avec votre bibliothèque.</p>";
+    $out .= "<p>Nous ne pouvons pas cloturer votre compte en l'état. Merci de prendre contact avec votre bibliothèque via le formulaire suivant:</p>";
+    $out .= drupal_render(drupal_get_form('scdhorizon_contact_form'));
   }
 
   return $out;
+}
+
+function scdhorizon_contact_form($form_state) {
+  $form['message'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Message'),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
+
+  return $form;
+}
+
+function scdhorizon_contanct_form_submit($form, &$form_state) {
+  $message = $form_state['values']['message'];
+  if (simple_mail_send('no-reply@angole.univ-ag.fr', 'jean.andre.santoni@gmail.com', 'Problème d\'obtention de quitus', $message)) {
+    drupal_set_message("Messge envoyé.", 'status');
+  } else {
+    drupal_set_message("Problème lors de l'envoi du message.", 'status');
+  }
 }
 
 function scdhorizon_cas_user_presave(&$edit, $account) {
