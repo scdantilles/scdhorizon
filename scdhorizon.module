@@ -20,18 +20,53 @@ function scdhorizon_menu() {
   $items['quitus'] = array(
         'title' => t('Demander un quitus'),
         'page callback' => 'scdhorizon_quitus',
-        'access callback' => TRUE,
+        'access callback' => 'user_is_logged_in',
         'type' => MENU_NORMAL_ITEM,
   );  
 
   $items['quitus/download'] = array(
         'title' => t('Télécharger un quitus'),
         'page callback' => 'scdhorizon_quitus_download',
-        'access callback' => TRUE,
+        'access callback' => scdhorizon_quitus_access(),
         'type' => MENU_NORMAL_ITEM,
   );  
 
   return $items;
+}
+
+function scdhorizon_quitus_access() {
+
+  global $user;
+  $userfields = user_load($user->uid);
+
+  if (!array_key_exists('und', $userfields->field_horizon_uid))
+    return false;
+
+  $bn = $userfields->field_horizon_uid['und'][0]['value'];
+
+  global $databases;
+  $H = $databases['horizon']['default'];
+  $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
+  
+  $sth = $dbh->prepare("SELECT convert(varchar(10),dateadd(dd,last_cko_date, convert(date, '01/01/1970')),3),location,title,convert(varchar(10),dateadd(dd,due_date, convert(date, '01/01/1970')),3) FROM item_with_borrower WHERE borrower#=$bn");
+  
+  $sth->execute();
+  
+  $docs = $sth->fetchAll();
+  
+  if (count($docs))
+    return false;
+  
+  $sth = $dbh->prepare("select * from burb where borrower#=$bn and block in ('l','Note', 'suspend', 'od', 'notice1', 'notice2', 'notice3', 'notice4', 'rn', 'final', 'frais', 'quitus', 'refund', 'fee')");
+  
+  $sth->execute();
+  
+  $blockages = $sth->fetchAll();
+  
+  if (count($blockages))
+    return false;
+
+  return false;
 }
 
 function scdhorizon_quitus_download() {
@@ -42,11 +77,18 @@ function scdhorizon_quitus_download() {
 
   $tcpdf = tcpdf_get_instance();
 
-  $tcpdf->DrupalInitialize(array());
+  $tcpdf->DrupalInitialize(array(
+    'footer' => array(
+      'html' => 'This is the <em>footer</em>',
+    ),
+    'header' => array(
+      'html' => 'This is the <em>header</em>',
+    ),
+  ));
 
   $tcpdf->setPrintFooter(false);
   $tcpdf->SetFont('helvetica', '', 11, '', true);
-  $tcpdf->SetMargins(300, PDF_MARGIN_TOP, 300);
+  $tcpdf->SetMargins(PDF_MARGIN_LEFT*2.5, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT*2.5);
 
   $tcpdf->writeHTML("
     <p>Objet: QUITUS</p>
