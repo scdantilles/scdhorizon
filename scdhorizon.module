@@ -21,11 +21,57 @@ function scdhorizon_menu() {
         'title' => t('Demander un quitus'),
         'page callback' => 'scdhorizon_quitus',
         'access callback' => TRUE,
-        'type' => MENU_LOCAL_TASK,
+        'type' => MENU_NORMAL_ITEM,
+  );  
+
+  $items['quitus/download'] = array(
+        'title' => t('Télécharger un quitus'),
+        'page callback' => 'scdhorizon_quitus_download',
+        'access callback' => TRUE,
+        'type' => MENU_NORMAL_ITEM,
   );  
 
   return $items;
 }
+
+function scdhorizon_quitus_download() {
+  global $user;
+
+  $oldLocale = setlocale(LC_TIME, '0');
+  setlocale(LC_TIME, 'fr_FR.UTF8', 'fr.UTF8', 'fr_FR.UTF-8', 'fr.UTF-8');
+
+  $tcpdf = tcpdf_get_instance();
+
+  $tcpdf->DrupalInitialize(array());
+
+  $tcpdf->setPrintFooter(false);
+  $tcpdf->SetFont('helvetica', '', 11, '', true);
+  $tcpdf->SetMargins(300, PDF_MARGIN_TOP, 300);
+
+  $tcpdf->writeHTML("
+    <p>Objet: QUITUS</p>
+    <br>
+    <p>Le Directeur du Service commun de la documentation de l’Université des Antilles certifie que $user->name (INE:  {INE}) est quitte de toute obligation envers les bibliothèques universitaires de l’Université des Antilles et que le dernier ouvrage emprunté a été rendu.</p>
+    <p>Pointe-à-Pitre, le ".strftime("%e %B %Y" ,time())."</p>
+    <p>S. HOUDEBERT,<br>Directeur du Service commun de la documentation</p>
+  ");
+
+  $pdf = $tcpdf->Output('', 'S');
+
+  if (!$pdf) {
+    return t('An error occured.');
+  }
+
+  header('Content-Type: application/pdf');
+  header('Content-Length: ' . strlen($pdf));
+  header('Content-Disposition: attachment; filename="quitus.pdf"');
+  print $pdf;
+
+  setlocale(LC_TIME, $oldLocale);
+
+  return NULL;
+}
+
 
 function scdhorizon_quitus() {
   
@@ -88,7 +134,7 @@ function scdhorizon_quitus() {
   }
 
   if ($candeliver) {
-    $out .= "<button type=\"button\" class=\"btn btn-danger\">Cloturer votre compte et obtenir le quitus</button>";
+    $out .= "<p><a href=\"/quitus/download\" type=\"button\" class=\"btn btn-primary\">Cloturer votre compte et obtenir le quitus</a></p>";
   }
   else
   {
@@ -108,7 +154,7 @@ function scdhorizon_contact_form($form_state) {
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => 'Submit',
+    '#value' => 'Envoyer',
   );
 
   return $form;
