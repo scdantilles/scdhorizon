@@ -202,9 +202,9 @@ function scdhorizon_contact_form($form_state) {
   return $form;
 }
 
-function scdhorizon_contanct_form_submit($form, &$form_state) {
+function scdhorizon_contact_form_submit($form, &$form_state) {
   $message = $form_state['values']['message'];
-  if (simple_mail_send('no-reply@angole.univ-ag.fr', 'jean.andre.santoni@gmail.com', 'Problème d\'obtention de quitus', $message)) {
+  if (simple_mail_send('no-reply@angole.univ-ag.fr', 'quitus@univ-ag.fr', 'Problème d\'obtention de quitus', $message)) {
     drupal_set_message("Messge envoyé.", 'status');
   } else {
     drupal_set_message("Problème lors de l'envoi du message.", 'status');
