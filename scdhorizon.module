@@ -77,6 +77,12 @@ function quitus_header(&$tcpdf) {
 
 function scdhorizon_quitus_download() {
   global $user;
+  $userfields = user_load($user->uid);
+
+  if (!array_key_exists('und', $userfields->field_horizon_uid))
+    return false;
+
+  $bn = $userfields->field_horizon_uid['und'][0]['value'];
 
   $oldLocale = setlocale(LC_TIME, '0');
   setlocale(LC_TIME, 'fr_FR.UTF8', 'fr.UTF8', 'fr_FR.UTF-8', 'fr.UTF-8');
@@ -117,6 +123,17 @@ function scdhorizon_quitus_download() {
   if (!$pdf) {
     return t('An error occured.');
   }
+
+  global $databases;
+  $H = $databases['horizon']['default'];
+  $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
+
+  $days = floor(mktime()/(24*60*60));
+  $minutes = floor((mktime() - mktime(0, 0, 0))/60);
+
+  $sth = $dbh->prepare("INSERT INTO burb (block, borrower#, date, time) VALUES ('quitus', $bn, $days, $minutes);");
+  
+  $sth->execute();
 
   header('Content-Type: application/pdf');
   header('Content-Length: ' . strlen($pdf));
