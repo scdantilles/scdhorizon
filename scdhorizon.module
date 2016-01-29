@@ -157,11 +157,11 @@ function scdhorizon_quitus() {
   if (array_key_exists('und', $userfields->field_horizon_uid))
   {
     $bn = $userfields->field_horizon_uid['und'][0]['value'];
-    $out .= "<p class=\"text-success\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Identitiant trouvé dans le SIGB.</p>";
+    $out .= "<p class=\"text-success\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Inscription à la BU trouvée.</p>";
   }
   else
   {
-    $out .= "<p class=\"text-danger\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span>Votre compte n'a pas pu être relié au SIGB.</p>";
+    $out .= "<p class=\"text-danger\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span> Votre inscription à la BU n'a pas été trouvée.</p>";
     $candeliver = false;
   }
 
@@ -179,11 +179,11 @@ function scdhorizon_quitus() {
   
     if (! count($docs))
     {
-      $out .= "<p class=\"text-success\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Aucun document en cours.</p>";
+      $out .= "<p class=\"text-success\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Aucun document en prêt.</p>";
     }
     else
     {
-      $out .= "<p class=\"text-danger\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span> Vous avez encore des documents en cours.</p>";
+      $out .= "<p class=\"text-danger\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\"></span> Vous avez des documents sur votre compte.</p>";
       $candeliver = false;
     }
   
@@ -195,7 +195,7 @@ function scdhorizon_quitus() {
   
     if (! count($blockages))
     {
-      $out .= "<p class=\"text-success\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Aucun blocages.</p>";
+      $out .= "<p class=\"text-success\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Aucun blocage.</p>";
     }
     else
     {
@@ -211,7 +211,7 @@ function scdhorizon_quitus() {
   }
   else
   {
-    $out .= "<p>Nous ne pouvons pas cloturer votre compte en l'état. Merci de prendre contact avec votre bibliothèque via le formulaire suivant:</p>";
+    $out .= "<p>Nous ne pouvons pas cloturer votre compte en l'état. Merci de prendre contact avec votre bibliothèque :</p>";
     $out .= drupal_render(drupal_get_form('scdhorizon_contact_form'));
   }
 
@@ -236,7 +236,7 @@ function scdhorizon_contact_form($form_state) {
 function scdhorizon_contact_form_submit($form, &$form_state) {
   $message = $form_state['values']['message'];
   if (simple_mail_send('no-reply@angole.univ-ag.fr', 'quitus@univ-ag.fr', 'Problème d\'obtention de quitus', $message)) {
-    drupal_set_message("Messge envoyé.", 'status');
+    drupal_set_message("Message envoyé.", 'status');
   } else {
     drupal_set_message("Problème lors de l'envoi du message.", 'status');
   }
@@ -304,7 +304,7 @@ function scdhorizon_cas_user_presave(&$edit, $account) {
 function scdhorizon_currentdocs($user) {
   if (! array_key_exists('und', $user->field_horizon_uid))
   {
-    return "<p>Votre compte n'a pas pu être relié au SIGB.</p>";
+    return "<p>Votre inscription à la BU n'a pas été trouvée.</p>";
   }
 
   $bn = $user->field_horizon_uid['und'][0]['value'];
