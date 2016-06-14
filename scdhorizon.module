@@ -20,7 +20,7 @@ function scdhorizon_menu() {
   $items['quitus'] = array(
         'title' => t('Demander un quitus'),
         'page callback' => 'scdhorizon_quitus',
-        'access callback' => 'user_is_logged_in',
+        'access callback' => TRUE,
         'type' => MENU_NORMAL_ITEM,
   );  
 
