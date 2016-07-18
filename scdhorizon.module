@@ -9,12 +9,11 @@ function scdhorizon_help($path, $arg) {
 } 
 
 function scdhorizon_menu() {
-  $items['user/%user/currentdocs'] = array(
+  $items['currentdocs'] = array(
         'title' => t('Documents en cours'),
         'page callback' => 'scdhorizon_currentdocs',
-        'page arguments' => array(1),
         'access callback' => TRUE,
-        'type' => MENU_LOCAL_TASK,
+        'type' => MENU_NORMAL_ITEM,
   );  
 
   $items['quitus'] = array(
@@ -152,6 +151,10 @@ function scdhorizon_quitus() {
   $userfields = user_load($user->uid);
 
   $out = "<h2>Vérifications:</h2>";
+
+  if (!user_is_logged_in()) {
+    drupal_goto('user', array('query' => array('destination' => 'quitus')));
+  }
 
   if (array_key_exists('und', $userfields->field_horizon_uid))
   {
@@ -306,7 +309,16 @@ function scdhorizon_cas_user_presave(&$edit, $account) {
   $dbh = null;
 }
 
-function scdhorizon_currentdocs($user) {
+function scdhorizon_currentdocs() {
+
+  global $user;
+  $user = user_load($user->uid);
+
+  if (!user_is_logged_in())
+  {
+    drupal_goto('user', array('query' => array('destination' => 'currentdocs')));
+  }
+
   if (! array_key_exists('und', $user->field_horizon_uid))
   {
     return "<p>Votre inscription à la BU n'a pas été trouvée.</p>";
