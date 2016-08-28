@@ -26,7 +26,7 @@ function scdhorizon_menu() {
   $items['quitus/download'] = array(
         'title' => t('Télécharger un quitus'),
         'page callback' => 'scdhorizon_quitus_download',
-        'access callback' => scdhorizon_quitus_access(),
+        'access callback' => 'scdhorizon_quitus_access',
         'type' => MENU_NORMAL_ITEM,
   );  
 
