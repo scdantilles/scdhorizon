@@ -159,7 +159,6 @@ function scdhorizon_quitus() {
   if (array_key_exists('und', $userfields->field_horizon_uid))
   {
     $bn = $userfields->field_horizon_uid['und'][0]['value'];
-    $out .= "<p class=\"text-success\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Inscription à la BU trouvée.</p>";
   }
   else
   {
@@ -316,7 +315,8 @@ function scdhorizon_currentdocs() {
 
   if (!user_is_logged_in())
   {
-    drupal_goto('user', array('query' => array('destination' => 'currentdocs')));
+    $url = urlencode($_SERVER['SERVER_NAME'] . "/cas?destination=currentdocs");
+    drupal_goto('https://auth.martinique.univ-ag.fr/cas2/login?service=' . $url);
   }
 
   if (! array_key_exists('und', $user->field_horizon_uid))
