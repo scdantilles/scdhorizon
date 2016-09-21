@@ -1,9 +1,11 @@
 <?php
 
+/* See settings.php for the Horizon credentials */
+
 function scdhorizon_help($path, $arg) {
   switch ($path) {
     case "admin/help#scdhorizon":
-      return '<p>' . t("Help text") . '</p>';
+      return '<p>' . t("SCD Integration with Horizon.") . '</p>';
       break;
   }
 } 
@@ -67,12 +69,14 @@ function scdhorizon_quitus_access() {
   return true;
 }
 
+/* PDF Header including two images */
 function quitus_header(&$tcpdf) {
   $tcpdf->SetY(25);
   $tcpdf->Image(dirname(__FILE__).'/images/buag.jpg', null, null, 50, null, 'JPG', '', '', true, 150, '', false, false, 0, false, false, false);
   $tcpdf->Image(dirname(__FILE__).'/images/univ-ag.jpg', null, null, 50, null, 'JPG', '', 'T', false, 150, 'R', false, false, 0, 'false', false, false);
 }
 
+/* Generates the Quitus PDF and send it over http */
 function scdhorizon_quitus_download() {
   global $user;
   $userfields = user_load($user->uid);
@@ -122,6 +126,7 @@ function scdhorizon_quitus_download() {
     return t('An error occured.');
   }
 
+  /* Write the quitus issue to the database of Horizon */
   global $databases;
   $H = $databases['horizon']['default'];
   $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
@@ -133,6 +138,7 @@ function scdhorizon_quitus_download() {
   
   $sth->execute();
 
+  /* HTTP headers */
   header('Content-Type: application/pdf');
   header('Content-Length: ' . strlen($pdf));
   header('Content-Disposition: attachment; filename="quitus.pdf"');
@@ -143,7 +149,7 @@ function scdhorizon_quitus_download() {
   return NULL;
 }
 
-
+/* Check if the user have enough permissions to get a quitus, with feedback */
 function scdhorizon_quitus() {
 
   $candeliver = true;
@@ -152,11 +158,13 @@ function scdhorizon_quitus() {
 
   $out = "<h2>Vérifications:</h2>";
 
+  /* Check if the user is logged in */
   if (!user_is_logged_in()) {
     $url = urlencode("http://" . $_SERVER['SERVER_NAME'] . "/cas?destination=quitus");
     drupal_goto('https://auth.martinique.univ-ag.fr/cas2/login?service=' . $url);
   }
 
+  /* Check if the user have an Horizon ID */
   if (array_key_exists('und', $userfields->field_horizon_uid))
   {
     $bn = $userfields->field_horizon_uid['und'][0]['value'];
@@ -167,12 +175,14 @@ function scdhorizon_quitus() {
     $candeliver = false;
   }
 
+  /* If borrower number is found */
   if (isset($bn)) {
   
     global $databases;
     $H = $databases['horizon']['default'];
     $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
   
+    /* Check if the user still have some documents on hold */
     $sth = $dbh->prepare("SELECT convert(varchar(10),dateadd(dd,last_cko_date, convert(date, '01/01/1970')),3),location,title,convert(varchar(10),dateadd(dd,due_date, convert(date, '01/01/1970')),3) FROM item_with_borrower WHERE borrower#=$bn");
   
     $sth->execute();
@@ -189,6 +199,7 @@ function scdhorizon_quitus() {
       $candeliver = false;
     }
   
+    /* Check if the user have some negative notes */
     $sth = $dbh->prepare("select * from burb where borrower#=$bn and block in ('l','Note', 'suspend', 'od', 'notice1', 'notice2', 'notice3', 'notice4', 'rn', 'final', 'frais', 'quitus', 'refund', 'fee')");
   
     $sth->execute();
@@ -208,6 +219,7 @@ function scdhorizon_quitus() {
     $dbh = null;
   }
 
+  /* Output the quitus download link or a contact form */
   if ($candeliver) {
     $out .= "<p><a href=\"/quitus/download\" type=\"button\" class=\"btn btn-primary\">Cloturer votre compte et obtenir le quitus</a></p>";
   }
@@ -220,6 +232,7 @@ function scdhorizon_quitus() {
   return $out;
 }
 
+/* A basic contact form */
 function scdhorizon_contact_form($form_state) {
   $form['message'] = array(
     '#type' => 'textarea',
@@ -244,6 +257,7 @@ function scdhorizon_contact_form_submit($form, &$form_state) {
   }
 }
 
+/* Populate some user fields with values from CAS */
 function scdhorizon_cas_user_presave(&$edit, $account) {
 
   // borrower#
@@ -309,6 +323,7 @@ function scdhorizon_cas_user_presave(&$edit, $account) {
   $dbh = null;
 }
 
+/* Display the current documents of the user */
 function scdhorizon_currentdocs() {
 
   global $user;
