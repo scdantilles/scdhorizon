@@ -153,7 +153,8 @@ function scdhorizon_quitus() {
   $out = "<h2>Vérifications:</h2>";
 
   if (!user_is_logged_in()) {
-    drupal_goto('user', array('query' => array('destination' => 'quitus')));
+    $url = urlencode("http://" . $_SERVER['SERVER_NAME'] . "/cas?destination=quitus");
+    drupal_goto('https://auth.martinique.univ-ag.fr/cas2/login?service=' . $url);
   }
 
   if (array_key_exists('und', $userfields->field_horizon_uid))
@@ -315,7 +316,7 @@ function scdhorizon_currentdocs() {
 
   if (!user_is_logged_in())
   {
-    $url = urlencode($_SERVER['SERVER_NAME'] . "/cas?destination=currentdocs");
+    $url = urlencode("http://" . $_SERVER['SERVER_NAME'] . "/cas?destination=currentdocs");
     drupal_goto('https://auth.martinique.univ-ag.fr/cas2/login?service=' . $url);
   }
 
