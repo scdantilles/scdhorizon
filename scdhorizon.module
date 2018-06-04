@@ -226,7 +226,8 @@ function scdhorizon_quitus() {
   else
   {
     $out .= "<p>Nous ne pouvons pas cloturer votre compte en l'état. Merci de prendre contact avec votre bibliothèque :</p>";
-    $out .= drupal_render(drupal_get_form('scdhorizon_contact_form'));
+	$render_contact_form = drupal_get_form('scdhorizon_contact_form');
+    $out .= drupal_render($render_contact_form);
   }
 
   return $out;
