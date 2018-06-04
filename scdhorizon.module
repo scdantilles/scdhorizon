@@ -346,7 +346,7 @@ function scdhorizon_currentdocs() {
   $H = $databases['horizon']['default'];
   $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
 
-  $sth = $dbh->prepare("SELECT convert(varchar(10),dateadd(dd,last_cko_date, convert(date, '01/01/1970')),3),location,title,convert(varchar(10),dateadd(dd,due_date, convert(date, '01/01/1970')),3) FROM item_with_borrower WHERE borrower#=$bn");
+  $sth = $dbh->prepare("SELECT convert(varchar(10),dateadd(dd,last_cko_date, convert(date, '01/01/1970')),3) as date_pret,location,title,convert(varchar(10),dateadd(dd,due_date, convert(date, '01/01/1970')),3) as date_retour FROM item_with_borrower WHERE borrower#=$bn");
 
   $sth->execute();
 
@@ -364,8 +364,8 @@ function scdhorizon_currentdocs() {
     $out .= "<tr>
                <td>".iconv('CP437', 'UTF-8', $doc['title'])."</td>
                <td>".$doc['location']."</td>
-               <td>".$doc['computed']."</td>
-               <td>".$doc['computed1']."</td>
+               <td>".$doc['date_pret']."</td>
+               <td>".$doc['date_retour']."</td>
              </tr>";
   }
   $out .= "</table>";
