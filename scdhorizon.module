@@ -44,8 +44,16 @@ function scdhorizon_quitus_access() {
 
   $bn = $userfields->field_horizon_uid['und'][0]['value'];
 
-  global $databases;
-  $H = $databases['horizon']['default'];
+  $H = array (
+    'database' => 'gwo_ka',
+    'username' => 'staff',
+    'password' => 'staffgroup',
+    'host' => 'major.martinique.univ-ag.fr',
+    'port' => '2025',
+    'driver' => 'dblib',
+    'prefix' => '',
+  );
+
   $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
   
   $sth = $dbh->prepare("SELECT convert(varchar(10),dateadd(dd,last_cko_date, convert(date, '01/01/1970')),3),location,title,convert(varchar(10),dateadd(dd,due_date, convert(date, '01/01/1970')),3) FROM item_with_borrower WHERE borrower#=$bn");
@@ -127,8 +135,16 @@ function scdhorizon_quitus_download() {
   }
 
   /* Write the quitus issue to the database of Horizon */
-  global $databases;
-  $H = $databases['horizon']['default'];
+  $H = array (
+    'database' => 'gwo_ka',
+    'username' => 'staff',
+    'password' => 'staffgroup',
+    'host' => 'major.martinique.univ-ag.fr',
+    'port' => '2025',
+    'driver' => 'dblib',
+    'prefix' => '',
+  );
+  
   $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
 
   $days = floor(mktime()/(24*60*60));
@@ -178,8 +194,15 @@ function scdhorizon_quitus() {
   /* If borrower number is found */
   if (isset($bn)) {
   
-    global $databases;
-    $H = $databases['horizon']['default'];
+	$H = array (
+		'database' => 'gwo_ka',
+		'username' => 'staff',
+		'password' => 'staffgroup',
+		'host' => 'major.martinique.univ-ag.fr',
+		'port' => '2025',
+		'driver' => 'dblib',
+		'prefix' => '',
+	);
     $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
   
     /* Check if the user still have some documents on hold */
@@ -265,8 +288,16 @@ function scdhorizon_cas_user_presave(&$edit, $account) {
 
   $ldap_uid = $edit['field_ldap_uid']['und']['0']['value'];
 
-  global $databases;
-  $H = $databases['horizon']['default'];
+  $H = array (
+    'database' => 'gwo_ka',
+    'username' => 'staff',
+    'password' => 'staffgroup',
+    'host' => 'major.martinique.univ-ag.fr',
+    'port' => '2025',
+    'driver' => 'dblib',
+    'prefix' => '',
+  );
+
   $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
 
   $sth = $dbh->prepare("SELECT * FROM borrower WHERE ville1='$ldap_uid'");
@@ -343,8 +374,16 @@ function scdhorizon_currentdocs() {
 
   $bn = $user->field_horizon_uid['und'][0]['value'];
 
-  global $databases;
-  $H = $databases['horizon']['default'];
+  $H = array (
+    'database' => 'gwo_ka',
+    'username' => 'staff',
+    'password' => 'staffgroup',
+    'host' => 'major.martinique.univ-ag.fr',
+    'port' => '2025',
+    'driver' => 'dblib',
+    'prefix' => '',
+  );
+  
   $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
 
   $sth = $dbh->prepare("SELECT convert(varchar(10),dateadd(dd,last_cko_date, convert(date, '01/01/1970')),3) as date_pret,location,title,convert(varchar(10),dateadd(dd,due_date, convert(date, '01/01/1970')),3) as date_retour FROM item_with_borrower WHERE borrower#=$bn");
