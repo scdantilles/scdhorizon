@@ -80,8 +80,8 @@ function scdhorizon_quitus_access() {
 /* PDF Header including two images */
 function quitus_header(&$tcpdf) {
   $tcpdf->SetY(25);
-  $tcpdf->Image(dirname(__FILE__).'/images/buag.jpg', null, null, 50, null, 'JPG', '', '', true, 150, '', false, false, 0, false, false, false);
-  $tcpdf->Image(dirname(__FILE__).'/images/univ-ag.jpg', null, null, 50, null, 'JPG', '', 'T', false, 150, 'R', false, false, 0, 'false', false, false);
+  $tcpdf->Image(dirname(__FILE__).'/images/buag.jpg', null, null, 25, null, 'JPG', '', '', true, 150, '', false, false, 0, false, false, false);
+  $tcpdf->Image(dirname(__FILE__).'/images/logo_ua.jpg', null, null, 25, null, 'JPG', '', 'T', false, 150, 'R', false, false, 0, 'false', false, false);
 }
 
 /* Generates the Quitus PDF and send it over http */
@@ -119,9 +119,9 @@ function scdhorizon_quitus_download() {
   $tcpdf->writeHTML("
     <p>Objet: QUITUS</p>
     <br>
-    <p>Le Directeur du Service commun de la documentation de l’Université des Antilles certifie que $user->name (INE:  {INE}) est quitte de toute obligation envers les bibliothèques universitaires de l’Université des Antilles et que le dernier ouvrage emprunté a été rendu.</p>
+    <p>Le Directeur du Service commun de la documentation de l’Université des Antilles certifie que $user->name est quitte de toute obligation envers les bibliothèques universitaires de l’Université des Antilles et que le dernier ouvrage emprunté a été rendu.</p>
     <p>Pointe-à-Pitre, le ".strftime("%e %B %Y" ,time())."</p>
-    <p>S. HOUDEBERT,<br>Directeur du Service commun de la documentation</p>
+    <p>Sylvain HOUDEBERT,<br>Directeur du SCDU Antilles</p>
     <br>
     <br>
   ");
@@ -147,8 +147,8 @@ function scdhorizon_quitus_download() {
   
   $dbh = new PDO($H['driver'].":host=".$H['host'].":".$H['port'].";dbname=".$H['database'], $H['username'], $H['password']);
 
-  $days = floor(mktime()/(24*60*60));
-  $minutes = floor((mktime() - mktime(0, 0, 0))/60);
+  $days = floor(time()/(24*60*60));
+  $minutes = floor((time() - time(0, 0, 0))/60);
 
   $sth = $dbh->prepare("INSERT INTO burb (block, borrower#, date, time) VALUES ('quitus', $bn, $days, $minutes);");
   
@@ -177,7 +177,7 @@ function scdhorizon_quitus() {
   /* Check if the user is logged in */
   if (!user_is_logged_in()) {
     $url = urlencode("http://" . $_SERVER['SERVER_NAME'] . "/cas?destination=quitus");
-    drupal_goto('https://auth.martinique.univ-ag.fr/cas2/login?service=' . $url);
+    drupal_goto('https://auth.martinique.univ-ag.fr/cas/login?service=' . $url);
   }
 
   /* Check if the user have an Horizon ID */
