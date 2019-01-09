@@ -364,7 +364,7 @@ function scdhorizon_currentdocs() {
   if (!user_is_logged_in())
   {
     $url = urlencode("http://" . $_SERVER['SERVER_NAME'] . "/cas?destination=currentdocs");
-    drupal_goto('https://auth.martinique.univ-ag.fr/cas2/login?service=' . $url);
+    drupal_goto('https://auth.martinique.univ-ag.fr/cas/login?service=' . $url);
   }
 
   if (! array_key_exists('und', $user->field_horizon_uid))
